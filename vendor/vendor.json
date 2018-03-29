@@ -1,0 +1,13 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "5S3+uSY9OiqIaiZ1r3oEDJ+p1iA=",
+			"path": "github.com/dhconnelly/rtreego",
+			"revision": "bfdb5de0e5dc6358ab585e4a5223dd4f334239ac",
+			"revisionTime": "2018-02-21T16:07:50Z"
+		}
+	],
+	"rootPath": "termination"
+}
