@@ -30,10 +30,15 @@ See the demo folder for some examples -
 }
 	term := termination.New()
 	term.FramesPerSecond = 5
-	defer term.Close()
+	term.NewEntity(termination.Position{10,10,10})
+	term.Shape = kirbyShape
 	go term.Animate()
+	term.Close()
 
-# API Docs
+	/* Signals get captured... see demos for better examples */
 
-Go
+# Contribute
+
+I'm sure you can make my code better!  Pull Requests are much appreciated
+
 
