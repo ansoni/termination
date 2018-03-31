@@ -50,6 +50,7 @@ type Entity struct {
 	DeathOnOffScreen bool /* Does the Shape die when it can't be seen/ */
 	Data             interface{} /* RW - This is your state, write what you want here */
 	FramesPerSecond  int  /* RW - Speed of the Animation.  This number cannot be greater than the overall Termination::FramesPerSecond */
+	MovesPerSecond  int  /* RW - Defaults to Speed of the Animation. This allows you to adjust the movement vs animation*/
 	Height           int /* RO - Height of your Shape */
 	Width            int /* RO - Width of your Shape */
 	ShapePath        string /* RW - Defaults to "default".  This is what path to execute in your shape.  Shape[ShapePath] => []string */
@@ -107,6 +108,7 @@ func (term *Termination) NewEntity(position Position) *Entity {
 	myEntity.frame = 0 /* We increment before first draw */
 	myEntity.position = position
 	myEntity.FramesPerSecond = term.FramesPerSecond
+	myEntity.MovesPerSecond = -1
 	myEntity.Height = 1
 	myEntity.Width = 1
 	myEntity.DefaultColor = 'w'
@@ -217,6 +219,7 @@ func (term *Termination) Animate() {
 
 			/* Execute Movement Functions */
 			shouldMove := anEntity.shouldMove()
+			shouldStepFrame := anEntity.shouldStepFrame()
 			if anEntity.MovementCallback != nil && shouldMove {
 				newPosition := anEntity.MovementCallback(term, anEntity, anEntity.position)
 				if anEntity.position.Z != newPosition.Z {
@@ -224,7 +227,8 @@ func (term *Termination) Animate() {
 				}
 				anEntity.position = newPosition
 			}
-			if shouldMove {
+
+			if shouldStepFrame {
 				/* step our frames */
 				pathLen := len(anEntity.Shape[anEntity.ShapePath])
 				if anEntity.frame >= (pathLen - 1) {
@@ -259,6 +263,7 @@ func (term *Termination) Animate() {
 			width := 1
 			height := 1
 			i := 0
+			j := 0
 
 			termDefaultColor, termDefaultColorOk := colorForRune(term.DefaultColor)
 			entityDefaultColor, entityDefaultColorOk := colorForRune(anEntity.DefaultColor)
@@ -273,7 +278,7 @@ func (term *Termination) Animate() {
 
 			ignoreWhitespace := true
 			for _, char := range drawData {
-
+				j+=1
 				color := defaultColor
 
 				/* figure out color */
@@ -286,8 +291,8 @@ func (term *Termination) Animate() {
 							term.debug("Selected Color: %v", color)
 						}
 					}
-					i += 1
 				}
+				i += 1
 
 				if (char != term.TransparencyChar) {
 					if ignoreWhitespace {
@@ -305,9 +310,10 @@ func (term *Termination) Animate() {
 					height += 1
 
 					// we only take the largest width
-					if (i > width) {
-						width = i
+					if (j > width) {
+						width = j
 					}
+					j = 0
 					cursor.Y += 1
 					cursor.X = originalPosition.X
 					ignoreWhitespace = true
@@ -381,10 +387,36 @@ func (term *Termination) detectCollisions(entity *Entity) {
 
 }
 
-func (entity *Entity) shouldMove() bool {
+func (entity *Entity) shouldStepFrame() bool {
 	term := entity.term
 	if entity.FramesPerSecond != term.FramesPerSecond && entity.FramesPerSecond > 0 {
 		updateEveryFrame := int(term.FramesPerSecond / entity.FramesPerSecond)
+		if term.FrameNum == 0 {
+			panic(fmt.Sprintf("Frame Number should never be 0 - %v/%v=0", term.FramesPerSecond, entity.FramesPerSecond))
+		}
+
+		if updateEveryFrame == 0 {
+			panic(fmt.Sprintf("Asked to update every 0 frames - %v/%v=0", term.FramesPerSecond, entity.FramesPerSecond))
+		}
+
+		if term.FrameNum%updateEveryFrame != 0 {
+			term.debug("Should not Move - Terminal.FramesPerSecond: %v, Entity.FramesPerSecond: %v, Frame: %v", term.FramesPerSecond, entity.FramesPerSecond, term.FrameNum)
+			return false
+		} else {
+			term.debug("Should Move - Terminal.FramesPerSecond: %v, Entity.FramesPerSecond: %v, Frame: %v", term.FramesPerSecond, entity.FramesPerSecond, term.FrameNum)
+		}
+	}
+	return true
+}
+
+func (entity *Entity) shouldMove() bool {
+	term := entity.term
+	if entity.FramesPerSecond != term.FramesPerSecond && (entity.FramesPerSecond > 0 || entity.MovesPerSecond > 0) {
+		speedBaseline := term.FramesPerSecond
+		if entity.MovesPerSecond > 0 {
+			speedBaseline = entity.MovesPerSecond
+		}
+		updateEveryFrame := int(term.FramesPerSecond / speedBaseline)
 		if term.FrameNum == 0 {
 			panic(fmt.Sprintf("Frame Number should never be 0 - %v/%v=0", term.FramesPerSecond, entity.FramesPerSecond))
 		}
