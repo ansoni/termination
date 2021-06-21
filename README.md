@@ -1,6 +1,6 @@
 # Termination - A Go Terminal Animation Library
 
-Loosely based on Perl's (Term::Animation)[http://search.cpan.org/~kbaucom/Term-Animation-2.6/lib/Term/Animation.pm].  This library can be used to animate ascii art on a terminal.  It uses the wonderful (termbox-go)[https://github.com/nsf/termbox-go/] for terminal manipulation.
+Loosely based on Perl's [Term::Animation](http://search.cpan.org/~kbaucom/Term-Animation-2.6/lib/Term/Animation.pm).  This library can be used to animate ascii art on a terminal.  It uses the wonderful [termbox-go](https://github.com/nsf/termbox-go/) for terminal manipulation.
 
 [![](demo.gif)](https://github.com/ansoni/goquarium)
 
@@ -14,11 +14,11 @@ Loosely based on Perl's (Term::Animation)[http://search.cpan.org/~kbaucom/Term-A
 - [x] Death on offscreen
 - [x] Support for framerates
 - [ ] Collision Support (coming soon)
- 
+
 
 # Usage
 
-See the demo folder for some examples - 
+See the demo folder for some examples -
 
 	kirbyShape := termination.Shape {
 	    "default": []string {
